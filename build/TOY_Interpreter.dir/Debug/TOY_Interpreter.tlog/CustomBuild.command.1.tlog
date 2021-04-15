@@ -1,0 +1,10 @@
+^C:\USERS\MP725\ONEDRIVE\DOCUMENTS\GAME DEV\C\TOY INTERPRETER\CMAKELISTS.TXT
+setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" "-SC:/Users/mp725/OneDrive/Documents/Game Dev/C/TOY Interpreter" "-BC:/Users/mp725/OneDrive/Documents/Game Dev/C/TOY Interpreter/build" --check-stamp-file "C:/Users/mp725/OneDrive/Documents/Game Dev/C/TOY Interpreter/build/CMakeFiles/generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

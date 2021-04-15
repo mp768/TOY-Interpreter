@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\mp725\OneDrive\Documents\Game Dev\C\TOY Interpreter\build\CMakeFiles\6419c43a033589633e5529c9ef0500a1\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{49AF4AD6-443E-3D4F-BECC-8C23A4E4F4F0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

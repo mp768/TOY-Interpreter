@@ -1,0 +1,10 @@
+^C:\USERS\MP725\ONEDRIVE\DOCUMENTS\GAME DEV\C\TOY INTERPRETER\BUILD\CMAKEFILES\6419C43A033589633E5529C9EF0500A1\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files (x86)\CMake\bin\cmake.exe" "-SC:/Users/mp725/OneDrive/Documents/Game Dev/C/TOY Interpreter" "-BC:/Users/mp725/OneDrive/Documents/Game Dev/C/TOY Interpreter/build" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "C:/Users/mp725/OneDrive/Documents/Game Dev/C/TOY Interpreter/build/TOY_Interpreter.sln"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
