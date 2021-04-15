@@ -7,7 +7,7 @@ void run(const std::string& file) {
 }
 
 void run_file(const std::string& path) {
-    std::ifstream file (path);
+    std::ifstream file(path);
     std::string line;
     std::string whole_file = "";
 
