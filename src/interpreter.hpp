@@ -1,5 +1,8 @@
 #pragma once
 #include <string>
+#include <optional>
+#include <sstream>
+#include <iomanip>
 
 #include "expr.hpp"
 #include "scanner.hpp"
@@ -12,138 +15,597 @@ switch(switch_stmt) {  case arg1: doarg1; break;  case arg2: doarg2; break;  cas
 #define c(x) case x
 #define ret(x) return x
 
-#define scenerio(case_type, stmt_, return_type) c(case_type): stmt_; ret(return_type); break;
+#define scenerio_r(case_type, stmts_, return_type) c(case_type): stmts_; ret(return_type); break;
+#define scenerio_s(case_type, stmts_) c(case_type): stmts_; break;
+#define match_s(match_a, stmts_) match(match_a) { stmts_ };
+#define op_match(err, lit, stmt_) if (expr_lit_1 != lit || expr_lit_2 != lit) { had_error = true; error(err); return; } evaluated_lit_type = lit; stmt_;
+
+#ifdef DEBUG_PRINT
+    int __IDENT = 0;
+#endif
 
 struct Interpreter {
-    Interpreter(Expr* v_expr) {
-        i_expr = v_expr;
-    }
+    Interpreter() {
+    }   
 
-    void evaluate(Expr* expr) {
-
-        auto type = loop_evaluate(expr);
-
-        #ifdef DEBUG_PRINT
-            switch(type) {
-                case Lit_type_number:
-                    std::cout << "Number" << std::endl;
-                    break;
-
-                case Lit_type_string:
-                    std::cout << "String" << std::endl;
-                    break;
-
-                case Lit_type_bool:
-                    std::cout << "Bool" << std::endl;
-                    break;
-
-                case Lit_type_none:
-                    std::cout << "None" << std::endl;
-                    break;
+    void evaluate_stmts(std::vector<Stmt> stmts) {
+        try {
+            for (auto stmt : stmts) {
+                evaluate_stmt(stmt);
             }
-        #endif
-
-        evaluated_lit_type = type;
-
-        /* 
-            Clearly don't know how to setup comparison evaluation, simply because it won't run the program because of it.
-            Will fix it way later
-        */
-
-        //if(evaluate_comparison_expr(expr))
-        //    return;
-
-        switch(type) {
-            case Lit_type_number:
-                evaluated_number = evaluate_expr_number(expr);
-                break;
-
-            case Lit_type_string:
-                evaluated_string = evaluate_expr_string(expr);
-                break;
-
-            case Lit_type_bool:
-                evaluated_bool = evaluate_expr_bool(expr);
-                break;
+        } catch (std::exception e) {
+            std::cerr << e.what() << std::endl;
         }
     }
 
-    bool evaluate_comparison_expr(Expr* expr) {
-        double b1;
-        double b2;
+    void evaluate_stmt(Stmt stmt) {
+        switch(stmt.type) {
+            case stmt_print_t:
+                evaluate_expr(stmt.expr);
+                switch(evaluated_lit_type) {
+                    case Lit_type_bool:
+                        std::cout << std::boolalpha << evaluated_bool.value();
+                        break;
 
-        evaluate(expr->lhs);
+                    case Lit_type_number:
+                        std::cout << evaluated_number;
+                        break;
 
-        switch(evaluated_lit_type) {
-            case Lit_type_number:
-                b1 = evaluated_number;
+                    case Lit_type_string:
+                        std::cout << evaluated_string;
+                        break;
+
+                    default:
+                        had_error = true;
+                        error("Cannot use evaluated type to print!");
+                        break;
+                }
+
                 break;
 
-            case Lit_type_bool:
-                b1 = evaluated_bool;
+            case stmt_println_t:
+                if (stmt.val == stmt_has_val_t) {
+                    evaluate_expr(stmt.expr);
+                    switch(evaluated_lit_type) {
+                        case Lit_type_bool:
+                            std::cout << std::boolalpha << evaluated_bool.value() << std::endl;
+                            break;
+
+                        case Lit_type_number:
+                            std::cout << evaluated_number << std::endl;
+                            break;
+
+                        case Lit_type_string:
+                            std::cout << evaluated_string << std::endl;
+                            break;
+
+                        default:
+                            had_error = true;
+                            error("Cannot use evaluated type to print!");
+                            break;
+                    }
+                }
+                else if (stmt.val == stmt_has_no_val_t) {
+                    std::cout << std::endl;
+                }
                 break;
 
-            //case Lit_type_string:
-            //    b1 = *evaluated_string.c_str();
-            //    break;
-        }
-
-        evaluate(expr->rhs);
-
-        switch(evaluated_lit_type) {
-            case Lit_type_number:
-                b2 = evaluated_number;
+            case stmt_expression_t:
+                evaluate_expr(stmt.expr);
                 break;
 
-            case Lit_type_bool:
-                b2 = evaluated_bool;
+            case stmt_none_t:
                 break;
-
-            //case Lit_type_string:
-            //    b2 = *evaluated_string.c_str();
-            //    break;
-        }
-
-        evaluated_lit_type = Lit_type_bool;
-
-        match(expr->op.type) {
-
-            scenerio(Greater, evaluated_bool = b1 > b2, true);
-            scenerio(GreaterEqual, evaluated_bool = b1 >= b2, true);
-            scenerio(Less, evaluated_bool = b1 < b2, true);
-            scenerio(LessEqual, evaluated_bool = b1 <= b2, true);
-            scenerio(EqualEqual, evaluated_bool = b1 == b2, true);
-            scenerio(NotEqual, evaluated_bool = b1 != b2, true);
-
-            //case GreaterEqual:
-            //    evaluated_bool = b1 >= b2;
-            //    return true;
-            //
-            //case Less:
-            //    evaluated_bool = b1 < b2;
-            //    return true;
-//
-            //case LessEqual:
-            //    evaluated_bool = b1 <= b2;
-            //    return true;
-//
-            //case EqualEqual:
-            //    evaluated_bool = b1 == b2;
-            //    return true;
-//
-            //case NotEqual:
-            //    evaluated_bool = b1 != b2;
-            //    return true;
 
             default:
-                return false;
+                had_error = true;
+                error("Unknown statement type used!");
+                break;
         }
     }
 
-    Lit_type loop_evaluate(Expr* expr) {
+    void evaluate_expr(Expr* expr) {
+        expr_lit_type = Lit_type_none;
+        evaluated_lit_type = Lit_type_none;
+        evaluated_bool.reset();
+
+
+        expr_lit_type = loop_evaluate_type(expr);
+
+        #ifdef DEBUG_PRINT
+            std::cout << std::endl;
+            ast_print_expr(expr);
+        #endif
+
+        #ifdef DEBUG_PRINT
+            std::cout << std::endl;
+            std::cout << "Original type:    " << Lit_type_to_string(expr_lit_type) << std::endl;
+        #endif
+
+        if(expr_lit_type == Lit_type_null)
+            expr_lit_type = Lit_type_number;
+
+        #ifdef DEBUG_PRINT
+            std::cout << "Transformed type: " << Lit_type_to_string(expr_lit_type) << " (Only changed when null value!)" << std::endl;
+        #endif
+
+        #ifdef DEBUG_PRINT
+            std::cout << std::endl;
+        #endif
+
+        //ast_print_expr(expr);
+        evaluate_expr_loop(expr);
+
+        #ifdef DEBUG_PRINT_INTERPRETER
+            if (evaluated_lit_type == Lit_type_bool)
+                std::cout << std::boolalpha << evaluated_bool.value() << std::endl;
+    
+            if (evaluated_lit_type == Lit_type_number)
+                std::cout << evaluated_number << std::endl;
+    
+            if (evaluated_lit_type == Lit_type_string)
+                std::cout << evaluated_string << std::endl;
+        #endif
+    }
+
+    //private:
+//
+    //    Lit_type     expr_lit_1;
+    //    Lit_type     expr_lit_2;
+//
+    //    double       expr_num_1;    
+    //    double       expr_num_2;    
+//
+    //    std::string  expr_str_1;
+    //    std::string  expr_str_2;
+//
+    //    bool         expr_b_1;
+    //    bool         expr_b_2;
+//
+    //public:
+
+    void evaluate_expr_loop(Expr* expr) {
+        if (had_error)
+            return;
+
+        std::ostringstream oss;
+
+        Lit_type expr_lit_1;
+        Lit_type expr_lit_2;
+
+        double expr_num_1;
+        double expr_num_2;
+
+        std::string expr_str_1;
+        std::string expr_str_2;
+
+        bool expr_b_1;
+        bool expr_b_2;
+
         switch(expr->type) {
             case literal_t:
                 switch(expr->lit_type) {
+                    case Lit_type_number:
+                        evaluated_lit_type = Lit_type_number;
+                        evaluated_number = expr->num_value;
+                        break;
+
+                    case Lit_type_string:
+                        evaluated_lit_type = Lit_type_string;
+                        evaluated_string = expr->s_value;
+                        break;
+
+                    case Lit_type_bool:
+                        evaluated_lit_type = Lit_type_bool;
+                        evaluated_bool = expr->b_value;
+                        break;
+
+                    case Lit_type_null:
+                        switch(expr_lit_type) {
+                            case Lit_type_number:
+                                evaluated_lit_type = Lit_type_number;
+                                evaluated_number = 0;
+                                break;
+
+                            case Lit_type_string:
+                                evaluated_lit_type = Lit_type_string;
+                                evaluated_string = "";
+                                break;
+
+                            case Lit_type_bool:
+                                evaluated_lit_type = Lit_type_bool;
+                                evaluated_bool = false;
+                                break;
+                                
+                            default:
+                                had_error = true;
+                                // this error as like others should never happen unless implementation details change and / or forgetting to update type checks.
+                                error("Null value passed but cannot be evaluated to a type.");
+                                break;
+
+                        };
+                        break;
+
+                    default:
+                        had_error = true;
+                        error("No type was evalulated that are of the usable types.");
+                        break;
+                };
+                break;
+
+            case group_t:
+                evaluate_expr_loop(expr->lhs);
+                break;
+
+            case unary_t:
+                switch(evaluated_lit_type) {
+                    case Lit_type_number:
+                        // Handled somewhere else for efficieny???????!?!?!??!
+
+                        evaluated_lit_type = Lit_type_number;
+                        evaluate_expr_loop(expr->lhs);
+                        switch(expr->op.type) {
+                            case Minus:
+                                evaluated_number = -evaluated_number;
+                                break;
+
+                            default:
+                                had_error = true;
+                                error("Unexpected unary operation used on number!");
+                                break;
+                        }
+                        break;
+
+                    //case Lit_type_string:
+                    //    evaluate_expr_loop(expr->lhs);
+                    //    had_error = true;
+                    //    error("Type string doesn't have any unary operations!");
+                    //    break;
+
+                    case Lit_type_bool:
+                        evaluated_lit_type = Lit_type_bool;
+                        evaluate_expr_loop(expr->lhs);
+                        switch(expr->op.type) {
+                            case Not:
+                                evaluated_bool = !evaluated_bool.value();
+                                break;
+
+                            default:
+                                had_error = true;
+                                error("Unexpected unary operation used on bool!");
+                                break;
+                        }
+                        break;
+
+                }
+
+            case binary_t:
+                switch(expr_lit_type) {
+                    case Lit_type_number:
+                        #ifdef DEBUG_PRINT
+                            __IDENT += 1;
+                        #endif
+
+                        evaluate_expr_loop(expr->lhs);
+
+                        if (evaluated_lit_type != Lit_type_number && evaluated_lit_type != Lit_type_bool) {
+                            had_error = true;
+                            error("Type does not match expr type. (Numbers only)");
+                            return;
+                        }
+
+                        switch(evaluated_lit_type) {
+                            case Lit_type_number:
+                                expr_lit_1 = Lit_type_number;
+                                expr_num_1 = evaluated_number;
+                                break;
+
+                            case Lit_type_bool:
+                                expr_lit_1 = Lit_type_bool;
+                                if (evaluated_bool.has_value())
+                                    expr_b_1 = evaluated_bool.value();
+                                break;
+                        };
+
+                        #ifdef DEBUG_PRINT
+                            for (auto i = 0; i < __IDENT * 4; i++) { std::cout << " "; }
+                            std::cout << "Number 1:\t" << expr_num_1 << std::endl;
+
+                            for (auto i = 0; i < __IDENT * 4; i++) { std::cout << " "; }
+                            if (evaluated_bool.has_value())
+                                std::cout << "Bool 1:  \t" << expr_b_1 << std::endl;
+                        #endif
+
+                        if (expr->type == unary_t && evaluated_lit_type == Lit_type_bool) {
+                            evaluated_lit_type = Lit_type_bool;
+                            switch(expr->op.type) {
+                                case Not:
+                                    evaluated_bool = !evaluated_bool.value();
+                                    break;
+
+                                default:
+                                    had_error = true;
+                                    error("Unexpected unary operation used on bool!");
+                                    break;
+                            }   
+                            return;
+                        } 
+
+                        else if (expr->type == unary_t) {
+                            evaluated_lit_type = Lit_type_number;
+                            switch(expr->op.type) {
+                                case Minus:
+                                    evaluated_number = -evaluated_number;
+                                    break;
+
+                                default:
+                                    had_error = true;
+                                    error("Unexpected unary operation used on number!");
+                                    break;
+                            }   
+                            return;
+                        }
+
+                        evaluate_expr_loop(expr->rhs);
+
+                        if (evaluated_lit_type != Lit_type_number && evaluated_lit_type != Lit_type_bool) {
+                            had_error = true;
+                            error("Type does not match expr type. (Numbers only)");
+                            return;
+                        }
+
+                        switch(evaluated_lit_type) {
+                            case Lit_type_number:
+                                expr_lit_2 = Lit_type_number;
+                                expr_num_2 = evaluated_number;
+                                break;
+
+                            case Lit_type_bool:
+                                expr_lit_2 = Lit_type_bool;
+                                if (evaluated_bool.has_value())
+                                    expr_b_2 = evaluated_bool.value();
+                                break;
+                        };
+
+                        #ifdef DEBUG_PRINT
+                            for (auto i = 0; i < __IDENT * 4; i++) { std::cout << " "; }
+                            std::cout << "Number 2:\t" << expr_num_2 << std::endl;
+
+                            for (auto i = 0; i < __IDENT * 4; i++) { std::cout << " "; }
+                            if(evaluated_bool.has_value())
+                                std::cout << "Bool 2:  \t" << expr_b_2 << std::endl;
+                            std::cout << std::endl;
+
+                            __IDENT -= 1;
+                        #endif
+
+                        switch(expr->op.type) {
+                            case Plus:
+                                op_match("Cannot add values that are not numbers!", Lit_type_number, evaluated_number = expr_num_1 + expr_num_2);
+                                break;
+
+                            case Minus:
+                                op_match("Cannot subtract values that are not numbers!", Lit_type_number, evaluated_number = expr_num_1 - expr_num_2);
+                                break;
+
+                            case Star:
+                                op_match("Cannot multiply values that are not numbers!", Lit_type_number, evaluated_number = expr_num_1 * expr_num_2);
+                                break;
+
+                            case Slash:
+                                op_match("Cannot divide values that are not numbers!", Lit_type_number, evaluated_number = expr_num_1 / expr_num_2);
+                                break;
+
+                            case Less:
+                                evaluated_lit_type = Lit_type_bool;
+                                evaluated_bool = expr_num_1 < expr_num_2;
+                                break;
+
+                            case LessEqual:
+                                evaluated_lit_type = Lit_type_bool;
+                                evaluated_bool = expr_num_1 <= expr_num_2;
+                                break;
+
+                            case Greater:
+                                evaluated_lit_type = Lit_type_bool;
+                                evaluated_bool = (expr_num_1 > expr_num_2);
+                                break;
+
+                            case GreaterEqual:
+                                evaluated_lit_type = Lit_type_bool;
+                                evaluated_bool = expr_num_1 >= expr_num_2;
+                                break;
+
+                            case NotEqual:
+                                evaluated_lit_type = Lit_type_bool;
+                                evaluated_bool = expr_num_1 != expr_num_2;
+                                break;
+
+                            case EqualEqual:
+                                evaluated_lit_type = Lit_type_bool;
+                                evaluated_bool = expr_num_1 == expr_num_2;
+                                break;
+
+                            default:
+                                had_error = true;
+                                error("Numbers cannot do that binary operation!");
+                                break;
+                        }
+
+
+                        break;
+
+                    case Lit_type_string:
+                        evaluate_expr_loop(expr->lhs);
+
+                        if (evaluated_lit_type != Lit_type_number && evaluated_lit_type != Lit_type_bool && evaluated_lit_type != Lit_type_string) {
+                            had_error = true;
+                            error("Type does not match expr type. (String Types only)");
+                            return;
+                        }
+
+                        switch(evaluated_lit_type) {
+                            case Lit_type_number:
+                                expr_lit_1 = Lit_type_string;
+                                oss << std::setprecision(16) << std::noshowpoint << evaluated_number;
+                                expr_str_1 = oss.str();
+                                break;
+
+                            case Lit_type_bool:
+                                expr_lit_1 = Lit_type_string;
+                                if (evaluated_bool.has_value()) {
+                                    if (evaluated_bool.value())
+                                        expr_str_1 = "true";
+                                    if (!evaluated_bool.value())
+                                        expr_str_1 = "false";
+                                }
+                                break;
+
+                            case Lit_type_string:
+                                expr_lit_1 = Lit_type_string;
+                                expr_str_1 = evaluated_string;
+                        };
+
+                        if (expr->type == unary_t && evaluated_lit_type == Lit_type_bool) {
+                            evaluated_lit_type = Lit_type_bool;
+                            switch(expr->op.type) {
+                                case Not:
+                                    evaluated_bool = !evaluated_bool.value();
+                                    break;
+
+                                default:
+                                    had_error = true;
+                                    error("Unexpected unary operation used on bool!");
+                                    break;
+                            }   
+                            return;
+                        } 
+
+                        else if (expr->type == unary_t) {
+                            had_error = true;
+                            error("No unary operations can be applied to strings");
+                            return;
+                        }
+
+                        evaluate_expr_loop(expr->rhs);
+
+                        if (evaluated_lit_type != Lit_type_number && evaluated_lit_type != Lit_type_bool && evaluated_lit_type != Lit_type_string) {
+                            had_error = true;
+                            error("Type does not match expr type. (String Types only)");
+                            return;
+                        }
+
+                        switch(evaluated_lit_type) {
+                            case Lit_type_number:
+                                expr_lit_2 = Lit_type_string;
+                                oss << std::setprecision(16) << std::noshowpoint << evaluated_number;
+                                expr_str_2 = oss.str();
+                                break;
+
+                            case Lit_type_bool:
+                                expr_lit_2 = Lit_type_string;
+                                if (evaluated_bool.has_value()) {
+                                    if (evaluated_bool.value())
+                                        expr_str_2 = "true";
+                                    if (!evaluated_bool.value())
+                                        expr_str_2 = "false";
+                                }
+                                break;
+
+                            case Lit_type_string:
+                                expr_lit_2 = Lit_type_string;
+                                expr_str_2 = evaluated_string;
+                        };
+
+                        switch(expr->op.type) {
+                            case Plus:
+                                evaluated_string = expr_str_1 + expr_str_2;
+                                evaluated_lit_type = Lit_type_string;
+                                break;
+
+                            case EqualEqual:
+                                evaluated_lit_type = Lit_type_bool;
+                                evaluated_bool = expr_str_1 == expr_str_2;
+                                break;
+
+                            case NotEqual:
+                                evaluated_lit_type = Lit_type_bool;
+                                evaluated_bool = expr_str_1 != expr_str_2;
+                                break;
+
+                            default:
+                                had_error = true;
+                                error("Strings cannot do that binary operation!");
+                                break;
+                        }
+
+                        break;
+
+                    case Lit_type_bool:
+                        evaluate_expr_loop(expr->lhs);
+
+                        if (evaluated_lit_type != Lit_type_bool) {
+                            had_error = true;
+                            error("Type does not match expr type. (Bools only)");
+                            return;
+                        }
+
+                        expr_lit_1 = Lit_type_bool;
+                        if (evaluated_bool.has_value())
+                            expr_b_1 = evaluated_bool.value();
+
+                        evaluate_expr_loop(expr->rhs);
+
+                        if (evaluated_lit_type != Lit_type_bool) {
+                            had_error = true;
+                            error("Type does not match expr type. (Bools only)");
+                            return;
+                        }
+
+                        if (expr->type == unary_t && evaluated_lit_type == Lit_type_bool) {
+                            evaluated_lit_type = Lit_type_bool;
+                            switch(expr->op.type) {
+                                case Not:
+                                    evaluated_bool = !evaluated_bool.value();
+                                    break;
+
+                                default:
+                                    had_error = true;
+                                    error("Unexpected unary operation used on bool!");
+                                    break;
+                            }   
+                            return;
+                        } 
+
+                        expr_lit_2 = Lit_type_bool;
+                        if (evaluated_bool.has_value())
+                            expr_b_2 = evaluated_bool.value();
+
+                        switch(expr->op.type) {
+                            default:
+                                had_error = true;
+                                error("There is no binary operations for bools!");
+                                break;
+                        }
+
+
+                        
+                        break;
+                }
+                break;
+        }
+
+        return;
+    }
+
+    Lit_type loop_evaluate_type(Expr* expr) {
+        switch(expr->type) {
+            case literal_t:
+                switch(expr->lit_type) {
+                    case Lit_type_null:
+                        return Lit_type_null;
+                        break;
+
                     case Lit_type_number:
                         return Lit_type_number;
                         break;
@@ -161,192 +623,18 @@ struct Interpreter {
             case unary_t:
             case binary_t:
             case group_t:
-                return loop_evaluate(expr->lhs);
+                return loop_evaluate_type(expr->lhs);
                 break;
         }
 
         return Lit_type_none;
     } 
 
-    bool evaluate_expr_bool(Expr* expr) {
-        bool b1;
-        bool b2;
-
-        switch(expr->type) {
-            case literal_t:
-                switch(expr->lit_type) {
-                    case Lit_type_string:
-                        had_error = true;
-                        report(expr->op.line, " at number binary operations", "cannot add string to bool (but can add boolean to string or number).");
-                        break;
-
-                    case Lit_type_number:
-                        return (bool)expr->num_value;
-                }
-                return expr->b_value;
-                break;
-
-            case binary_t:
-                b1 = evaluate_expr_bool(expr->lhs);
-                b2 = evaluate_expr_bool(expr->rhs);
-
-                switch(expr->op.type) {
-                    default:
-                        had_error = true;
-                        report(expr->op.line, " with evaluating bool binary operator type", "operator type is not apart of the current list of usable operators ");
-                        break;
-                }
-                break;
-
-            case group_t:
-                return evaluate_expr_bool(expr->lhs);
-                break;
-
-            case unary_t:
-                b1 = evaluate_expr_bool(expr->lhs);
-                switch(expr->op.type) {
-                    case Not:
-                        return !b1;
-                        break;
-
-                    default:
-                        had_error = true;
-                        report(expr->op.line, " with evaluating bool unary operator type", "operator type is not apart of the current list of usable operators (ie. !)");
-                        break;
-                }
-                break;
-        }
-
-        return false;
-    }
-
-    std::string evaluate_expr_string(Expr* expr) {
-        std::string str1;
-        std::string str2;
-
-        switch(expr->type) {
-            case literal_t:
-                switch(expr->lit_type) {
-                    case Lit_type_number:
-                        return std::to_string(expr->num_value);
-                        break;
-
-                    case Lit_type_bool:
-                        return std::to_string(expr->b_value);
-                        break;
-                }
-
-                return expr->s_value;
-                break;
-
-            case binary_t:
-                str1 = evaluate_expr_string(expr->lhs);
-                str2 = evaluate_expr_string(expr->rhs);
-
-                switch(expr->op.type) {
-                    case Plus:
-                        return str1 + str2;
-                        break;
-                        
-                    default:
-                        had_error = true;
-                        report(expr->op.line, " with evaluating string binary operator type", "operator type is not apart of the current list of usable operators (ie. +)");
-                        break;
-                }
-                break;
-
-            case group_t:
-                return evaluate_expr_string(expr->lhs);
-                break;
-
-            case unary_t:
-                str1 = evaluate_expr_string(expr->lhs);
-                switch(expr->op.type) {
-                    default:
-                        had_error = true;
-                        report(expr->op.line, " with evaluating string unary operator type", "operator type is not apart of the current list of usable operators");
-                        break;
-                }
-                break;
-        }
-
-        return "";
-    }
-
-    double evaluate_expr_number(Expr* expr) {
-        double num1;
-        double num2;
-
-        switch(expr->type) {
-            case literal_t:
-                switch(expr->lit_type) {
-                    case Lit_type_string:
-                        had_error = true;
-                        report(expr->op.line, " at number binary operations", "cannot add string to number (but can add number to string or boolean).");
-                        break;
-
-                    case Lit_type_bool:
-                        return expr->b_value;
-                }
-                return expr->num_value;
-                break;
-
-            case binary_t:
-                num1 = evaluate_expr_number(expr->lhs);
-                num2 = evaluate_expr_number(expr->rhs);
-
-                switch(expr->op.type) {
-                    case Star:
-                        return num1 * num2;
-                        break;
-
-                    case Slash:
-                        return num1 / num2;
-                        break;
-
-                    case Plus:
-                        return num1 + num2;
-                        break;
-
-                    case Minus:
-                        return num1 - num2;
-                        break;
-                        
-                    default:
-                        had_error = true;
-                        report(expr->op.line, " with evaluating number binary operator type", "operator type is not apart of the current list of usable operators (ie. +, -, *, /)");
-                        break;
-                }
-                break;
-
-            case group_t:
-                return evaluate_expr_number(expr->lhs);
-                break;
-
-            case unary_t:
-                num1 = evaluate_expr_number(expr->lhs);
-                switch(expr->op.type) {
-                    case Minus:
-                        return -num1;
-                        break;
-                        
-                    default:
-                        had_error = true;
-                        report(expr->op.line, " with evaluating number unary operator type", "operator type is not apart of the current list of usable operators (ie. -)");
-                        break;
-                }
-                break;
-        }
-
-        return 0;
-    }
-
     double evaluated_number;
     std::string evaluated_string;
-    bool evaluated_bool;
+    std::optional<bool> evaluated_bool;
     bool null_active = false;
 
+    Lit_type expr_lit_type;
     Lit_type evaluated_lit_type;
-
-    Expr* i_expr = nullptr;
 };

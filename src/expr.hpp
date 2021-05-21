@@ -23,6 +23,20 @@ enum Lit_type {
     Lit_type_null,
 };
 
+std::string Lit_type_to_string(Lit_type type) {
+    switch(type) {
+        case Lit_type_number:  return "Number"; break;
+        case Lit_type_string:  return "String"; break;
+        case Lit_type_bool:    return "Bool"; break;
+        case Lit_type_null:    return "Null"; break;
+    
+        case Lit_type_none:    return "None"; break;
+    
+        default:
+            return "Error"; break;
+    }
+}
+
 struct Expr {
     Expr() {
         rhs = nullptr;
@@ -32,6 +46,8 @@ struct Expr {
         num_value = 0;
         s_value = "";
         b_value = false;
+
+        lit_type = Lit_type_none;
     }
 
     void binary(Expr* v_lhs, Token v_op, Expr* v_rhs) {
@@ -122,5 +138,70 @@ Expr Expr_new_binary(Expr* lhs, Token op, Expr* rhs) {
     t.binary(lhs, op, rhs);
 
     return t;
+}
+
+enum Stmt_type {
+    stmt_none_t,
+
+    stmt_expression_t,
+    stmt_print_t,
+    stmt_println_t,
+};
+
+enum Stmt_has_value {
+    stmt_val_none_t,
+
+    stmt_has_val_t,
+    stmt_has_no_val_t,
+};
+
+struct Stmt {
+    Stmt() {
+        expr = nullptr;
+        type = stmt_none_t;
+        val = stmt_val_none_t;
+    }
+
+    void Expression(Expr* v_expr) {
+        expr = v_expr;
+        type = stmt_expression_t;
+    }
+
+    void Print(Expr* v_expr) {
+        expr = v_expr;
+        type = stmt_print_t;
+    }
+
+    void PrintLine(Expr* v_expr) {
+        expr = v_expr;
+        val = stmt_has_val_t;
+        type = stmt_println_t;
+    }
+
+    void PrintLine() {
+        val = stmt_has_no_val_t;
+        type = stmt_println_t;
+    }
+
+
+    Stmt_type type;
+    Stmt_has_value val;
+    Expr* expr;
+};
+
+Stmt Stmt_new_expression(Expr* val) {
+    Stmt t; t.Expression(val); return t;
+}
+
+Stmt Stmt_new_print(Expr* val) {
+    Stmt t; t.Print(val); return t;
+}
+
+Stmt Stmt_new_printline(Expr* val) {
+    Stmt t; t.PrintLine(val); return t;
+}
+
+Stmt Stmt_new_printline() {
+    Stmt t; t.PrintLine(); return t;
 }
 

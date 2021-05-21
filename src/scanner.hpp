@@ -25,6 +25,17 @@ void error(int line, std::string message) {
     report(line, "", message);
 }
 
+void report(std::string where, std::string message)
+{
+    std::cout << " Error" << where << ": " << message << std::endl;
+    had_error = true;
+}
+
+void error(std::string message)
+{
+    report("", message);
+}
+
 Scanner Scanner_new(std::string input) { return Scanner { input }; }
 
 bool Scanner_is_at_end(const Scanner& scanner) {
@@ -79,7 +90,40 @@ void Scanner_number(Scanner& scanner) {
 }
 
 void Scanner_string(Scanner& scanner) {
+    std::vector<char> str_buf;
     while (Scanner_peek(scanner) != '"' && !Scanner_is_at_end(scanner)) {
+
+        if (Scanner_peek(scanner) == '\\') {
+            switch(Scanner_peek_next(scanner)) {
+                case '0':
+                    str_buf.push_back('\0');
+                    break;
+                case 'n':
+                    str_buf.push_back('\n');
+                    break;
+                case 't':
+                    str_buf.push_back('\t');
+                    break;
+                case 'r':
+                    str_buf.push_back('\r');
+                    break;
+                case '\\':
+                    str_buf.push_back('\\');
+                    break;
+                case '"':
+                    str_buf.push_back('\"');
+                    break;
+                case '\'':
+                    str_buf.push_back('\'');
+                    break;
+
+                default:
+                    error(scanner.line, "Invalid Char Token!");
+            };
+            Scanner_advance(scanner);
+        } else {
+            str_buf.push_back(Scanner_peek(scanner));
+        }
 
         if (Scanner_peek(scanner) == '\n') scanner.line++;
 
@@ -95,7 +139,11 @@ void Scanner_string(Scanner& scanner) {
 
     std::string final_value = "";
 
-    final_value += Scanner_get_inbetween(scanner, 1, -1);
+    for (auto c : str_buf) {
+        final_value += c;
+    };
+
+    //final_value += Scanner_get_inbetween(scanner, 1, -1);
 
     Scanner_add_token(scanner, String, final_value);
 }

@@ -78,12 +78,20 @@ void Parser_synchronize(Parser& parser) {
 
         switch (Parser_peek(parser).type) {
             case Print:
+            case PrintLn:
                 return;
         }
+        
+        Parser_advance(parser);
     }
 }
 
-std::vector<Expr> parser_exprs;
+std::vector<Stmt> parser_stmts(1);
+#define PARSER_GET_STMT(x) parser_stmts[parser_stmts.size() + x]
+#define CURRENT_STMT PARSER_GET_STMT(-1);
+#define PREVIOUS_STMT PARSER_GET_STMT(-2);
+
+std::vector<Expr> parser_exprs(100000);
 #define PARSER_GET_FMAX(x) parser_exprs[parser_exprs.size() + x]
 #define CURRENT_EXPR PARSER_GET_FMAX(-1)
 #define PREVIOUS_EXPR PARSER_GET_FMAX(-2)
@@ -217,10 +225,40 @@ Expr Parser_primary(Parser& parser) {
     throw parse_error(Parser_peek(parser), " Expected an expression.");
 } 
 
+Stmt Parser_print_stmt(Parser& parser) {
+    Expr value = Parser_expression(parser);
+    Parser_consume(parser, Semicolon, "Expect ';' after value!");
+    return Stmt_new_print(&CURRENT_EXPR);
+}
+
+Stmt Parser_printline_stmt(Parser& parser) {
+    if (Parser_check(parser, Semicolon)) {
+        Parser_advance(parser);
+        return Stmt_new_printline();
+    }
+
+    Expr value = Parser_expression(parser);
+    Parser_consume(parser, Semicolon, "Expect ';' after value!");
+    return Stmt_new_printline(&CURRENT_EXPR);
+}
+
+Stmt Parser_expr_stmt(Parser& parser) {
+    Expr expr = Parser_expression(parser);
+    Parser_consume(parser, Semicolon, "Expect ';' after value!");
+    return Stmt_new_expression(&CURRENT_EXPR);
+}
+
+Stmt Parser_statement(Parser& parser) {
+    if (Parser_match(parser, { Print })) return Parser_print_stmt(parser);
+    if (Parser_match(parser, { PrintLn })) return Parser_printline_stmt(parser);
+
+    return Parser_expr_stmt(parser);
+}
+
 void Parser_parse(Parser& parser) {
-    parser_exprs.resize(UINT16_MAX);
     try {
-        Parser_expression(parser);
+        while (!Parser_is_at_end(parser)) 
+            parser_stmts.push_back(Parser_statement(parser));
     } catch (ParseError p) {
         return;
     }

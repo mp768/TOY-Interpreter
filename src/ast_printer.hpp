@@ -3,7 +3,7 @@
 
 #include "expr.hpp"
 
-int __IDENT = 0;
+//int __IDENT = 0;
 int __INTERATION = 0;
 
 #define PRINT_LOOP()                  \
@@ -68,20 +68,21 @@ void ast_print_expr(Expr* expr) {
         
         case binary_t:
             PRINT("(");
-            switch (expr->op.type) {
-                case Plus: 
-                    std::cout << "+";
-                    break;
-                case Minus: 
-                    std::cout << "-";
-                    break;
-                case Star: 
-                    std::cout << "*";
-                    break;
-                case Slash:
-                    std::cout << "/";
-                    break;
-            }
+            PRINT(expr->op.lexeme);
+            //switch (expr->op.type) {
+            //    case Plus: 
+            //        std::cout << "+";
+            //        break;
+            //    case Minus: 
+            //        std::cout << "-";
+            //        break;
+            //    case Star: 
+            //        std::cout << "*";
+            //        break;
+            //    case Slash:
+            //        std::cout << "/";
+            //        break;
+            //}
 
             PRINT(" ");
             INCREASE_INTERATION;

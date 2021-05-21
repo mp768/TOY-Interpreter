@@ -28,11 +28,11 @@ elseif(WIN32)
   if(${CMAKE_BUILD_TYPE} MATCHES Debug)
 
     set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin/Windows/Debug)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-subsystem,windows -std=c++17")
   
   elseif(${CMAKE_BUILD_TYPE} MATCHES Release)
   
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-subsystem,windows -std=c++17")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
     set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin/Windows/Release)
   
   endif()

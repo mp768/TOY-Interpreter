@@ -9,7 +9,7 @@ enum Token_type {
     NONE,
     
     // Keywords
-    Print, True, False, Nil,
+    Print, PrintLn, Var, True, False, Nil,
 
     LeftParen, RightParen, LeftBrace, RightBrace,
     Comma, Dot, Minus, Plus, Star, Slash, Semicolon,
@@ -33,6 +33,8 @@ std::string Token_type_to_string(Token_type type) {
         case NONE:         return "None";
 
         case Print:        return "Print";
+        case PrintLn:      return "PrintLine";
+        case Var:          return "Var";
 
         case LeftParen:    return "Left Paren";
         case RightParen:   return "Right Paren";
@@ -76,6 +78,8 @@ std::string Token_type_to_string(Token_type type) {
 
 std::map<std::string, Token_type> Token_type_keywords = {
     { "print", Print },
+    { "println", PrintLn },
+    { "var", Var },
     { "true", True },
     { "false", False },
     { "nil", Nil },
