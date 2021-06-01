@@ -1,99 +1,203 @@
-println "True: \n";
-    print "    ";
+var trues   =    "True: \n";
+var falses  =    "False: \n";
+var tab     =    "    ";
 
-    print 45 / 8 > 3 / 5 + 4;      // true  
-    println " (45 / 8 > 3 / 5 + 4)";  
+var print_switch = true;
+var print_switch2 = true;
 
-println "\n";  
+//var h = -5;
+//
+//{
+//    h = h - 1;
+//    println h;
+//}
+//
+//println h;
+//
+//while (h <= 0) { 
+//
+//    println h;
+//    println;
+//    h = h + 1;
+//}
 
-println "False: \n";
-    print "    ";
-    
-    print 4 / 8 > 3 / 5 + 4;       // false    
-    println " (4 / 8 > 3 / 5 + 4)";
+//for (var i = 0; i < 6; i = i + 1) { 
+//    println i;
+//    var ii = i + 1;
+//
+//    if (ii == 4) {
+//        break;
+//    }
+//
+//    println ("Modified " + ii + " ") + ii;
+//}
 
-    print "    ";
+//var a = 0;
+//var b = 1;
+//
+//while (a < 10000) {
+//  println a;
+//  a = b;
+//  var temp = a;
+//  b = temp + b;
+//}
 
-    print 1 + 4 / 8 > 3 / 5 + 4;   // false  
-    println " (1 + 4 / 8 > 3 / 5 + 4)";
+//func repat(n) {
+//    println n;
+//    repeat(n);
+//}
+//
+//func repeat(n) {
+//    println n;
+//    repeat(n);
+//}
+//
+//var t = "HI";
+//repat(t);
 
-    print "    ";
+func fib(n) {
+    if (n <= 1) return n;
+    return fib(n - 2) + fib(n - 1);
+}
 
-    print 2 + 4 / 8 > 3 / 5 + 4;   // false   
-    println " (2 + 4 / 8 > 3 / 5 + 4)";
+func count(x) {
+    if (x > 0) {
+        println x;
+        count(x - 1); 
+        count(x - 2);
+    }
+}
 
-    print "    ";
+func number() {
+    return 7;
+}
 
-    print 4 * 4 / 8 > 3 / 5 + 4;   // false
-    println " (4 * 4 / 8 > 3 / 5 + 4)";
+//{
+//    count(6);
+//    count(10);
+//}
+//
+//count(number());
+println fib(-1);
 
-    print "    ";
 
-    print 4 / 8 > 3 / 5 + 3;       // false       
-    println " (4 / 8 > 3 / 5 + 3)";
-
-    print "    ";
-
-    print 4 / 8 > 3 / 5 + 0.4;     // false 
-    println " (4 / 8 > 3 / 5 + 0.4)";
-
-println "\n";  
-
-println "True: \n";
-    print "    ";
-
-    print 10 / 8 > 3 / 5 + 0.44;   // true 
-    println " (10 / 8 > 3 / 5 + 0.44)";
-
-println "\n";  
-
-println "False: \n";
-    print "    ";
-
-    print 4 / 8 > 3 / 5 + 9.4;     // false  
-    println " (4 / 8 > 3 / 5 + 9.4)";   
-
-    print "    ";
-
-    print 4 / 8 > 3 / 5 + 0.67464; // false   
-    println " (4 / 8 > 3 / 5 + 0.67464)";
-
-println "\n";  
-
-println "True: \n";
-    print "    ";
-
-    print 4 / 8 > 3 / 5 + -4;      // true 
-    println " (4 / 8 > 3 / 5 + -4)";    
-
-    print "    ";
-
-    print 9 / 8 > 3 / 5 + -0.54;   // true 
-    println " (9 / 8 > 3 / 5 + -0.54)";
-
-println "\n";  
-
-println "False: \n";
-    print "    ";
-
-    print 4 / 8 > 3 / 5 - -4;      // false   
-    println " (4 / 8 > 3 / 5 - -4)";   
-
-    print "    ";
-
-    print 6 / 8 > 3 / 5 + 4;       // false   
-    println " (6 / 8 > 3 / 5 + 4)"; 
-
-    print "    ";
-
-    print 4 / 8 > 3 / 5 + 4;       // false  
-    println " (4 / 8 > 3 / 5 + 4)";
-
-    print "    ";
-
-    print 3 / 8 > 3 / 5 + 4;       // false   
-    println " (3 / 8 > 3 / 5 + 4)";
-
-// 1 here now
-
-//"Hello Person! What's your name?: \"" + "MP" + "\", Age?: \"" + 62743798949539 + "\", Can you code?: \"" + true + "\""; 
+//if (print_switch and print_switch2) {
+//
+//    println trues;
+//        print tab;
+//
+//        print 45 / 8 > 3 / 5 + 4;      // true  
+//        println " (45 / 8 > 3 / 5 + 4)";  
+//
+//    println "\n";  
+//}
+//
+///*
+//
+//multiline 
+//comment
+//
+//*/
+//
+//else {
+//
+//    println falses;
+//        print tab;
+//
+//        print 4 / 8 > 3 / 5 + 4;       // false    
+//        println " (4 / 8 > 3 / 5 + 4)";
+//
+//        print tab;
+//
+//        print 1 + 4 / 8 > 3 / 5 + 4;   // false  
+//        println " (1 + 4 / 8 > 3 / 5 + 4)";
+//
+//        print tab;
+//
+//        print 2 + 4 / 8 > 3 / 5 + 4;   // false   
+//        println " (2 + 4 / 8 > 3 / 5 + 4)";
+//
+//        print tab;
+//
+//        print 4 * 4 / 8 > 3 / 5 + 4;   // false
+//        println " (4 * 4 / 8 > 3 / 5 + 4)";
+//
+//        print tab;
+//
+//        print 4 / 8 > 3 / 5 + 3;       // false       
+//        println " (4 / 8 > 3 / 5 + 3)";
+//
+//        print tab;
+//
+//        print 4 / 8 > 3 / 5 + 0.4;     // false 
+//        println " (4 / 8 > 3 / 5 + 0.4)";
+//
+//    println "\n";  
+//}
+//
+//if (print_switch) {
+//
+//    println trues;
+//        print tab;
+//
+//        print 10 / 8 > 3 / 5 + 0.44;   // true 
+//        println " (10 / 8 > 3 / 5 + 0.44)";
+//
+//    println "\n";  
+//}
+//
+//else {
+//
+//    println falses;
+//        print tab;
+//
+//        print 4 / 8 > 3 / 5 + 9.4;     // false  
+//        println " (4 / 8 > 3 / 5 + 9.4)";   
+//
+//        print tab;
+//
+//        print 4 / 8 > 3 / 5 + 0.67464; // false   
+//        println " (4 / 8 > 3 / 5 + 0.67464)";
+//
+//    println "\n";  
+//}
+//
+//if (print_switch) {
+//
+//    println trues;
+//        print tab;
+//
+//        print 4 / 8 > 3 / 5 + -4;      // true 
+//        println " (4 / 8 > 3 / 5 + -4)";    
+//
+//        print tab;
+//
+//        print 9 / 8 > 3 / 5 + -0.54;   // true 
+//        println " (9 / 8 > 3 / 5 + -0.54)";
+//
+//    println "\n"; 
+//} 
+//
+//else {
+//
+//    println falses;
+//        print tab;
+//
+//        print 4 / 8 > 3 / 5 - -4;      // false   
+//        println " (4 / 8 > 3 / 5 - -4)";   
+//
+//        print tab;
+//
+//        print 6 / 8 > 3 / 5 + 4;       // false   
+//        println " (6 / 8 > 3 / 5 + 4)"; 
+//
+//        print tab;
+//
+//        print 4 / 8 > 3 / 5 + 4;       // false  
+//        println " (4 / 8 > 3 / 5 + 4)";
+//
+//        print tab;
+//
+//        print 3 / 8 > 3 / 5 + 4;       // false   
+//        println " (3 / 8 > 3 / 5 + 4)";
+//}

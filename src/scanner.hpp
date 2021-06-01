@@ -182,7 +182,17 @@ void Scanner_scan_token(Scanner& scanner) {
 
         case '/': 
             if (Scanner_match(scanner, '/')) {
+                
                 while (Scanner_peek(scanner) != '\n' && !Scanner_is_at_end(scanner)) Scanner_advance(scanner);
+
+            } else if (Scanner_match(scanner, '*')) {
+
+                while (Scanner_peek(scanner) != '*' && !Scanner_is_at_end(scanner)) Scanner_advance(scanner);\
+
+                if (Scanner_peek(scanner) == '*' && Scanner_peek_next(scanner) == '/') {
+                    Scanner_advance(scanner);
+                    Scanner_advance(scanner);
+                }
             } else {
                 Scanner_add_token(scanner, Slash);
             }

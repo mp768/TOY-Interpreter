@@ -17,6 +17,7 @@
 #include "scanner.hpp"
 #include "parser.hpp"
 #include "ast_printer.hpp"
+#include "environment.hpp"
 #include "interpreter.hpp"
 
 void run(const std::string& file) {
@@ -30,7 +31,7 @@ void run(const std::string& file) {
 
     //ast_print_expr(&CURRENT_EXPR);
 
-    Interpreter i;
+    toy::Interpreter i;
     i.evaluate_stmts(parser_stmts);
 
     //std::cout << "1" << std::endl;
@@ -69,18 +70,32 @@ void run_file(const std::string& path) {
         whole_file.append("\n");
     }
 
+
     run(whole_file);
+    
     if (had_error) return;
 }
 
+#define DEBUGGER_DEBUGGINGO
+
 int main(int argc, char* argv[]) {
 
-    if (argc == 1 || argc > 2) {
-        printf("toy interpreter usage: toy {file}");
-        return 0;
-    } else if (argc == 2) {
-        run_file(argv[1]);
-    }
+    #ifdef DEBUGGER_DEBUGGING
+        parser_exprs.resize(100000);
+        parser_exprs.reserve(100000);
+        run_file("../../../../test.toy");
+    #else
+
+        if (argc == 1 || argc > 2) {
+            printf("toy interpreter usage: toy {file}");
+            return 0;
+        } else if (argc == 2) {
+            parser_exprs.resize(100000);
+            parser_exprs.reserve(100000);
+            run_file(argv[1]);
+        }
+
+    #endif
 
     return 0;
 }

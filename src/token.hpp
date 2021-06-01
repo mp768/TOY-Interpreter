@@ -9,7 +9,8 @@ enum Token_type {
     NONE,
     
     // Keywords
-    Print, PrintLn, Var, True, False, Nil,
+    Print, PrintLn, Var, True, False, Nil, If, Else, And, Or, Switch,
+    While, For, Break, Fun, Return,
 
     LeftParen, RightParen, LeftBrace, RightBrace,
     Comma, Dot, Minus, Plus, Star, Slash, Semicolon,
@@ -35,6 +36,16 @@ std::string Token_type_to_string(Token_type type) {
         case Print:        return "Print";
         case PrintLn:      return "PrintLine";
         case Var:          return "Var";
+        case If:           return "If";
+        case Else:         return "Else";
+        case Or:           return "Or";
+        case And:          return "And";
+        case Switch:       return "Switch";
+        case For:          return "For";
+        case While:        return "While";
+        case Break:        return "Break";
+        case Fun:          return "Fun";
+        case Return:       return "Return";
 
         case LeftParen:    return "Left Paren";
         case RightParen:   return "Right Paren";
@@ -83,6 +94,16 @@ std::map<std::string, Token_type> Token_type_keywords = {
     { "true", True },
     { "false", False },
     { "nil", Nil },
+    { "if", If },
+    { "else", Else },
+    { "or", Or },
+    { "and", And },
+    { "switch", Switch },
+    { "for", For },
+    { "while", While },
+    { "break", Break },
+    { "func", Fun },
+    { "return", Return },
 }; 
 
 struct Token {
